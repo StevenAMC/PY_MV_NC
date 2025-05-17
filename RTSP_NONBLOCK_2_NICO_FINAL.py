@@ -34,7 +34,7 @@ class RTSP_movement:
         self.rtsp_url = rtsp_url
         self.cola = coladatos
         self.ultima_placa = ""
-        self.ultimo_tiempo = None
+        self.ultimo_tiempo = ""
         self.plaquitas = queue.Queue()
         self.colaimages = queue.Queue(maxsize=10)
         self.cola_imagenes_a_detectar = queue.Queue(maxsize=1)#15
