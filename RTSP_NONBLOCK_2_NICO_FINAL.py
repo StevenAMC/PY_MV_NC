@@ -519,7 +519,7 @@ while True:
     #frame2 = stream2.get_frame()
     
     
-    if not stream.get_running() or not stream2.get_running() and not exit_event.is_set():
+    if not stream.get_running() or not stream2.get_running() and exit_event.is_set():
         print("ERROR")
         for c in conexiones:
             try:
