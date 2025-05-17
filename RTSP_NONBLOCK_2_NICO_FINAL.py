@@ -186,8 +186,9 @@ class RTSP_movement:
         if not self.plaquitas.empty():
             self.ultima_placa = self.plaquitas.get()
             self.ultimo_tiempo = datetime.now().strftime("%H:%M:%S")
-        cv2.putText(frame_show,"Placa Vehicular:",(10, 80),cv2.FONT_HERSHEY_SIMPLEX,1,(0, 255, 0),2,)
-        cv2.putText(frame_show, self.ultimo_tiempo+" > "+self.ultima_placa,(10, 150),cv2.FONT_HERSHEY_SIMPLEX,2,(0, 255, 0),8,)    
+            cv2.putText(frame_show,"Placa Vehicular:",(10, 80),cv2.FONT_HERSHEY_SIMPLEX,1,(0, 255, 0),2,)
+        
+        cv2.putText(frame_show, self.ultimo_tiempo+" > "+self.ultima_placa,(10, 150),cv2.FONT_HERSHEY_SIMPLEX,1.5,(0, 255, 0),3,)    
         
         current_time = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
         cv2.putText(frame_show, current_time, (10,30), cv2.FONT_HERSHEY_SIMPLEX, 1, (0, 255, 255), 2)
