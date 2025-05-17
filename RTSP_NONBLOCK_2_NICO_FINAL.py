@@ -20,7 +20,7 @@ __SALIDA__ = 0
 __ENTRADA__ = 1
 __UMBRA_TAM__ = 1000
 __SCALA__ = 0.15
-_tiempo_ventana = 1
+_tiempo_ventana = 0
 IP_camera1 = "192.168.18.225"
 IP_camera2 = "192.168.18.226"
 IP_camera3 = "192.168.18.227"
@@ -230,7 +230,7 @@ class RTSP_movement:
                                 )
                                 detected_text += text + ""
                                 if (
-                                    acc > 0.70 and len(text) == 7 and ("-" in text)
+                                    acc > 0.70 and (len(text) >= 6 and len(text) <= 7)# and ("-" in text)
                                 ):  # len(text)>6 and len(text)<8 and acc>0.96 :
                                     #print("PLACA:", text, "Precision:", acc)
                                     self.strings_recibidos.append(text)
