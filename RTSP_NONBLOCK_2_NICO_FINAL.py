@@ -20,7 +20,7 @@ __SALIDA__ = 0
 __ENTRADA__ = 1
 __UMBRA_TAM__ = 1000
 __SCALA__ = 0.15
-_tiempo_ventana = 3.0
+_tiempo_ventana = 1
 IP_camera1 = "192.168.18.225"
 IP_camera2 = "192.168.18.226"
 IP_camera3 = "192.168.18.227"
@@ -33,6 +33,8 @@ class RTSP_movement:
     def __init__(self, rtsp_url, coladatos, direccion):
         self.rtsp_url = rtsp_url
         self.cola = coladatos
+        self.ultima_placa = ""
+        self.ultimo_tiempo = None
         self.plaquitas = queue.Queue()
         self.colaimages = queue.Queue(maxsize=10)
         self.cola_imagenes_a_detectar = queue.Queue(maxsize=1)#15
@@ -182,9 +184,11 @@ class RTSP_movement:
             print("¡La cola cola_imagenes_a_detectar está llena!")
                 
         if not self.plaquitas.empty():
-            cv2.putText(frame_show,"Placa Vehicular:",(10, 80),cv2.FONT_HERSHEY_SIMPLEX,1,(0, 255, 0),2,)
-            cv2.putText(frame_show, self.plaquitas.get(),(10, 150),cv2.FONT_HERSHEY_SIMPLEX,2.5,(0, 255, 0),8,)
-            
+            self.ultima_placa = self.plaquitas.get()
+            self.ultimo_tiempo = datetime.now().strftime("%H:%M:%S")
+        cv2.putText(frame_show,"Placa Vehicular:",(10, 80),cv2.FONT_HERSHEY_SIMPLEX,1,(0, 255, 0),2,)
+        cv2.putText(frame_show, self.ultimo_tiempo+" > "+self.ultima_placa,(10, 150),cv2.FONT_HERSHEY_SIMPLEX,2,(0, 255, 0),8,)    
+        
         current_time = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
         cv2.putText(frame_show, current_time, (10,30), cv2.FONT_HERSHEY_SIMPLEX, 1, (0, 255, 255), 2)
         #cv2.putText(frame, texto_estado , (10, 30), cv2.FONT_HERSHEY_SIMPLEX, 1, color,2)
