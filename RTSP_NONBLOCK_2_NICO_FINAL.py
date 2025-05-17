@@ -79,7 +79,10 @@ class RTSP_movement:
                     ]
                     for poly in points:
                         cv2.fillPoly(frame, np.array([poly], dtype=np.int32), (0, 0, 0))
-
+                    #       RECORTE:
+                    frame = frame[::, 0:ancho-500]
+                    
+                    
                 if self.direccion == __SALIDA__:
                     alto, ancho, canales = frame.shape
                     frame = frame[300:alto, 700:ancho-100]
@@ -90,6 +93,7 @@ class RTSP_movement:
                     ]
                     for poly in points:
                         cv2.fillPoly(frame, np.array([poly], dtype=np.int32), (0, 0, 0))
+                    
                 else:
                     pass
                 
@@ -226,7 +230,7 @@ class RTSP_movement:
                                 )
                                 detected_text += text + ""
                                 if (
-                                    acc > 0.89 and len(text) == 7 and ("-" in text)
+                                    acc > 0.70 and len(text) == 7 and ("-" in text)
                                 ):  # len(text)>6 and len(text)<8 and acc>0.96 :
                                     #print("PLACA:", text, "Precision:", acc)
                                     self.strings_recibidos.append(text)
