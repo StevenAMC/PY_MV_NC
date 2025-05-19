@@ -179,9 +179,9 @@ class RTSP_movement:
                     print("¡La cola cola_imagenes_a_detectar está llena!")"""
         try:
             #if self.aLlenar == True:#self.cola_imagenes_a_detectar.full():
-            if self.cola_imagenes_a_detectar.empty():
-                self.cola_imagenes_a_detectar.put(frame_org,block=False)
-                #self.cola_imagenes_a_detectar.get()  # Elimina el más antiguo
+            if self.cola_imagenes_a_detectar.full():
+                self.cola_imagenes_a_detectar.get()  # Elimina el más antiguo
+            self.cola_imagenes_a_detectar.put(frame_org,block=False)
             #self.cola_imagenes_a_detectar.put(frame_org,block=False)       
         except: #queue.Full:
             #self.aLlenar = False

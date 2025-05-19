@@ -177,7 +177,7 @@ class RTSP_movement:
                 except: #queue.Full:
                     self.aLlenar = False
                     print("¡La cola cola_imagenes_a_detectar está llena!")"""
-        try:
+        """try:
             #if self.aLlenar == True:#self.cola_imagenes_a_detectar.full():
             if self.cola_imagenes_a_detectar.empty():
                 self.cola_imagenes_a_detectar.put(frame_org,block=False)
@@ -185,8 +185,17 @@ class RTSP_movement:
             #self.cola_imagenes_a_detectar.put(frame_org,block=False)       
         except: #queue.Full:
             #self.aLlenar = False
+            print("¡La cola cola_imagenes_a_detectar está llena!")"""
+        try:
+            #if self.aLlenar == True:#self.cola_imagenes_a_detectar.full():
+            if self.cola_imagenes_a_detectar.full():
+                self.cola_imagenes_a_detectar.get()  # Elimina el más antiguo
+            self.cola_imagenes_a_detectar.put(frame_org,block=False)
+            #self.cola_imagenes_a_detectar.put(frame_org,block=False)       
+        except: #queue.Full:
+            #self.aLlenar = False
             print("¡La cola cola_imagenes_a_detectar está llena!")
-                
+        
         if not self.plaquitas.empty():
             self.ultima_placa = self.plaquitas.get()
             self.ultimo_tiempo = datetime.now().strftime("%H:%M:%S")
