@@ -239,7 +239,7 @@ class RTSP_movement:
                                 )
                                 detected_text += text + ""
                                 if (
-                                    acc > 0.70 and (len(text) >= 6 and len(text) <= 7)# and ("-" in text)
+                                    acc > 0.80 and (len(text) >= 6 and len(text) <= 7)# and ("-" in text)
                                 ):  # len(text)>6 and len(text)<8 and acc>0.96 :
                                     #print("PLACA:", text, "Precision:", acc)
                                     self.strings_recibidos.append(text)
