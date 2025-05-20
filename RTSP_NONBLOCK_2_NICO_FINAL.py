@@ -380,7 +380,7 @@ class SerialScanner:
                     for t in terminadores:
                         if t in buffer:
                             mensaje, _, buff = buffer.partition(t)
-                            buffer = buff
+                            buffer = b''#buff
                             try:    
                                 mensaje_str = mensaje.decode(errors='ignore').strip()
                                 if t == b"\r\n":
