@@ -386,11 +386,15 @@ class SerialScanner:
                                 if t == b"\r\n":
                                     print(f"Mensaje recibido <CR><LN>: {mensaje_str}")
                                     self.cola.put(f"#Q:{mensaje_str},D:1")
+                                    self.ser.read_all()
                                 else:
                                     print(f"Mensaje recibido <TAB>: {mensaje_str}")
                                     self.cola.put(f"#Q:{mensaje_str},D:0")
+                                    self.ser.read_all()
                             except Exception as e:
                                 print(e, "ERROR en decode SerialScanner")
+                            
+                                
                 else:
                     time.sleep(0.05)
         except Exception as e:#(serial.SerialException, OSError) as e:
