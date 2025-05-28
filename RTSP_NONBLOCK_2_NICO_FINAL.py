@@ -10,6 +10,7 @@ from collections import Counter
 from pynput import keyboard
 import serial.tools.list_ports
 import sys
+import gi 
 
 # Variable global de control
 exit_event = threading.Event()
@@ -379,18 +380,17 @@ class SerialScanner:
                     buffer += self.ser.read(self.ser.in_waiting)
                     for t in terminadores:
                         if t in buffer:
-                            mensaje, _, buff = buffer.partition(t)
-                            buffer = b''#buff
-                            try:    
+                            mensaje, _, buffer = buffer.partition(t)
+                            try:
+                                # Filtrar caracteres inválidos antes de decodificar
+                                mensaje = bytes([b for b in mensaje if 32 <= b <= 126])
                                 mensaje_str = mensaje.decode(errors='ignore').strip()
                                 if t == b"\r\n":
                                     print(f"Mensaje recibido <CR><LN>: {mensaje_str}")
                                     self.cola.put(f"#Q:{mensaje_str},D:1")
-                                    self.ser.read_all()
                                 else:
                                     print(f"Mensaje recibido <TAB>: {mensaje_str}")
                                     self.cola.put(f"#Q:{mensaje_str},D:0")
-                                    self.ser.read_all()
                             except Exception as e:
                                 print(e, "ERROR en decode SerialScanner")
                             
