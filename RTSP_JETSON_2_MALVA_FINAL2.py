@@ -110,7 +110,7 @@ class RTSP_movement:
                 if self.direccion == __SALIDA__:
                     alto, ancho, canales = frame.shape
                     #frame = frame[300:alto, 700:ancho-100]
-                    frame = frame[int(300/1.5):alto, int(700/1.5):ancho-(100/1.5)]
+                    frame = frame[int(300/1.5):alto, int(700/1.5):ancho-int(100/1.5)]
                     alto, ancho, canales = frame.shape
                     points = [
                         [[ancho/6, 0], [ancho, 0], [ancho, alto/1.8]],
