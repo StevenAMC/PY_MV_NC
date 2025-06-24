@@ -514,11 +514,11 @@ while True:
         frame2_actual = frame2_show
     
         
-    #if frame is not None and frame2 is not None:
-    if frame_show is not None:
-        #combined = cv2.hconcat([frame_show, frame2_show])
-        #cv2.imshow(_window_name, combined)
-        cv2.imshow(_window_name, frame_show)
+    if frame is not None and frame2 is not None:
+    #if frame_show is not None:
+        combined = cv2.hconcat([frame_show, frame2_show])
+        cv2.imshow(_window_name, combined)
+        #cv2.imshow(_window_name, frame_show)
     
     k = cv2.waitKey(1) & 0xFF
     if k == 27:
