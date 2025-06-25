@@ -81,7 +81,7 @@ class DetectorScannerUSB:
 
 
 class SerialSender:
-    def __init__(self, cola, port='/dev/ttyAMA0', baudrate=115200, intervalo_ms=200):
+    def __init__(self, cola, port='/dev/ttyAMA0', baudrate=115200, intervalo_ms=100):
         self.cola = cola
         self.intervalo = intervalo_ms / 1000.0  # Convertir a segundos
         self.running = True
@@ -163,7 +163,8 @@ class SerialScanner:
         self.serial_thread.join()
 
 class SerialScanner_RT:
-    def __init__(self, cola, port, baudrate=9600):
+    def __init__(self, cola, port, baudrate=9600, id = 0):
+        self.id = id
         self.cola = cola
         self.port = port
         self.ser = serial.Serial(self.port, baudrate, timeout=0)
@@ -205,6 +206,7 @@ class SerialScanner_RT:
                 else:
                     time.sleep(0.001)
         except Exception as e:#(serial.SerialException, OSError) as e:
+            self.cola.put(f"#E{self.id}:0")
             print(f"[ERROR] Puerto {self.port} desconectado: {e}")
             
             self.running = False
@@ -285,17 +287,25 @@ puertos = serial.tools.list_ports.comports()
 
 puertos_filtrados = [p.device for p in puertos if 'ttyUSB' in p.device]
 conexiones = []
+i = 1
 for puerto in puertos_filtrados:
     print(f"Abriendo puerto {puerto}")
     try:
-        scan_ser = SerialScanner_RT(cola=cola,port=puerto,baudrate=9600)
+        
+        scan_ser = SerialScanner_RT(cola=cola,port=puerto,baudrate=9600,id=i)
         print(f"Puerto {puerto} abierto correctamente a 9600 baudios.")
         conexiones.append(scan_ser)
+        i+=1
         
     except serial.SerialException as e:
         print(f"No se pudo abrir {puerto}: {e}")
-
-
+if i==1:
+    print("Cantidad de scanners < 2. Enviando #E1-2:0")
+    cola.put(f"#E1:0")
+    cola.put(f"#E2:0")
+elif i<3:
+    print("Cantidad de scanners es 1. Enviando #E2:0")
+    cola.put(f"#E2:0")
 # ------------------------------------------------------------------
 # 2. Bucle de ventana OpenCV (en el hilo principal)
 def opencv_window():
