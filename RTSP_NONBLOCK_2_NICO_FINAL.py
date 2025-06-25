@@ -10,7 +10,7 @@ from collections import Counter
 from pynput import keyboard
 import serial.tools.list_ports
 import sys
-import gi 
+
 
 # Variable global de control
 exit_event = threading.Event()
@@ -26,7 +26,8 @@ IP_camera1 = "192.168.18.225"
 IP_camera2 = "192.168.18.226"
 IP_camera3 = "192.168.18.227"
 IP_camera4 = "192.168.18.228"   
-rtsp_url1 = f"rtsp://admin:admin2025@{IP_camera3}:554/cam/realmonitor?channel=1&subtype=0?buffer_size=102400000"
+IP_camera_l = "192.168.18.180"
+rtsp_url1 = f"rtsp://admin:admin2025@{IP_camera_l}:554/cam/realmonitor?channel=1&subtype=0?buffer_size=102400000"
 rtsp_url2 = f"rtsp://admin:admin2025@{IP_camera4}:554/cam/realmonitor?channel=1&subtype=0?buffer_size=102400000"
 
 
@@ -294,8 +295,6 @@ class RTSP_movement:
         self.cap.release()
 
 
-
-
 class scannerUSB:
     def __init__(self, cola, port='/dev/ttyS0', baudrate=9600):
         self.window_name = 'Detector_Fatiga'
@@ -393,8 +392,6 @@ class SerialScanner:
                                     self.cola.put(f"#Q:{mensaje_str},D:0")
                             except Exception as e:
                                 print(e, "ERROR en decode SerialScanner")
-                            
-                                
                 else:
                     time.sleep(0.05)
         except Exception as e:#(serial.SerialException, OSError) as e:
@@ -413,7 +410,67 @@ class SerialScanner:
             self.ser.close()
         self.serial_thread.join()
     
-    
+class SerialScanner_RT:
+    def __init__(self, cola, port, baudrate=9600, id = 0):
+        self.id = id
+        self.cola = cola
+        self.port = port
+        self.ser = serial.Serial(self.port, baudrate, timeout=0)
+        self.running = True
+        self.ser.read_all()
+        self.serial_thread = threading.Thread(
+            target=self.serial_scanner, daemon=True)
+        self.serial_thread.start()
+        
+
+    def serial_scanner(self):
+        terminadores = [b'\r\n', b'\t']
+        buffer = b''
+        try:
+            while self.running:
+                if self.ser.in_waiting > 0:
+                    buffer += self.ser.read(self.ser.in_waiting)
+                    #buffer = bytes([b for b in buffer if 32 <= b <= 126])#[x]
+                    # Permitir caracteres imprimibles (32-126) y CR(13), LF(10), TAB(9)
+                    buffer = bytes([b for b in buffer if 32 <= b <= 126 or b in (9, 10, 13)])
+                    for t in terminadores:
+                        if t in buffer:
+                            mensaje, _, buffer = buffer.partition(t)
+                            try:
+                                # Filtrar caracteres inválidos antes de decodificar
+                                #mensaje = bytes([b for b in mensaje if 32 <= b <= 126])
+                                mensaje = bytes([b for b in mensaje if 32 <= b <= 126 or b in (9, 10, 13)])
+                                mensaje_str = mensaje.decode(errors='ignore').strip()
+                                if t == b"\r\n":
+                                    print(f"Mensaje recibido <CR><LN>: {mensaje_str}")
+                                    self.cola.put(f"#Q:{mensaje_str},D:1")
+                                else:
+                                    print(f"Mensaje recibido <TAB>: {mensaje_str}")
+                                    self.cola.put(f"#Q:{mensaje_str},D:0")
+                            except Exception as e:
+                                print(e, "ERROR en decode SerialScanner")
+                            finally:
+                                print("b >",buffer)
+                else:
+                    time.sleep(0.001)
+        except Exception as e:#(serial.SerialException, OSError) as e:
+            self.cola.put(f"#E{self.id}:0")
+            print(f"[ERROR] Puerto {self.port} desconectado: {e}")
+            
+            self.running = False
+            exit_event.set()  # Señalamos que se debe salir
+        finally:
+            try:
+                self.ser.close()
+            except:
+                pass
+
+    def stop(self):
+        self.running = False
+        if self.ser.is_open:
+            self.ser.close()
+        self.serial_thread.join()
+        
 class SerialSender:
     def __init__(self, cola, port='/dev/ttyS0', baudrate=115200, intervalo_ms=400):
         self.cola = cola
@@ -471,17 +528,24 @@ puertos = serial.tools.list_ports.comports()
 
 puertos_filtrados = [p.device for p in puertos if 'ttyUSB' in p.device]
 conexiones = []
+i = 1
 for puerto in puertos_filtrados:
     print(f"Abriendo puerto {puerto}")
     try:
-        scan_ser = SerialScanner(cola=cola_datos,port=puerto,baudrate=9600)
+        scan_ser = SerialScanner_RT(cola=cola_datos,port=puerto,baudrate=9600)
         print(f"Puerto {puerto} abierto correctamente a 9600 baudios.")
         conexiones.append(scan_ser)
-        
+        i+=1
     except serial.SerialException as e:
         print(f"No se pudo abrir {puerto}: {e}")
 
-
+if i==1:
+    print("Cantidad de scanners < 2. Enviando #E1-2:0")
+    cola_datos.put(f"#E1:0")
+    cola_datos.put(f"#E2:0")
+elif i<3:
+    print("Cantidad de scanners es 1. Enviando #E2:0")
+    cola_datos.put(f"#E2:0")
 
 def ocr_callbacks1():
     print("INICIO ocr")
