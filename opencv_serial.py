@@ -201,7 +201,7 @@ class SerialScanner_RT:
                             except Exception as e:
                                 print(e, "ERROR en decode SerialScanner")
                             finally:
-                                print(buffer)
+                                print("b >",buffer)
                 else:
                     time.sleep(0.001)
         except Exception as e:#(serial.SerialException, OSError) as e:
