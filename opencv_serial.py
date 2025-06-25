@@ -14,7 +14,7 @@ cola = queue.Queue()
 exit_event = threading.Event()
 
 
-__UART_JETSON__ = '/dev/ttyTHS1'
+__UART_JETSON__ = '/dev/ttyAMA0'#'/dev/ttyTHS1'
 
 
 class DetectorScannerUSB:
@@ -81,7 +81,7 @@ class DetectorScannerUSB:
 
 
 class SerialSender:
-    def __init__(self, cola, port='/dev/ttyAMA0', baudrate=115200, intervalo_ms=330):
+    def __init__(self, cola, port='/dev/ttyAMA0', baudrate=115200, intervalo_ms=200):
         self.cola = cola
         self.intervalo = intervalo_ms / 1000.0  # Convertir a segundos
         self.running = True
@@ -151,10 +151,10 @@ class SerialScanner:
                                 self.cola.put(f"#Q:{mensaje_str},D:0")
                         except Exception as e:
                             print(e,"ERROR en decode SerialScanner")
-                time.sleep(0.01)
+                time.sleep(0.001)
             else:
                 # Evita ocupar el 100% de CPU
-                time.sleep(0.08)
+                time.sleep(0.01)
         
     def stop(self):
         self.running = False
@@ -200,10 +200,13 @@ class SerialScanner_RT:
                                     self.cola.put(f"#Q:{mensaje_str},D:0")
                             except Exception as e:
                                 print(e, "ERROR en decode SerialScanner")
+                            finally:
+                                print(buffer)
                 else:
-                    time.sleep(0.05)
+                    time.sleep(0.001)
         except Exception as e:#(serial.SerialException, OSError) as e:
             print(f"[ERROR] Puerto {self.port} desconectado: {e}")
+            
             self.running = False
             exit_event.set()  # Señalamos que se debe salir
         finally:
@@ -249,7 +252,7 @@ class ServidorTCP:
                         with conn:
                             self.client_conn = conn
                             while self.running:
-                                time.sleep(0.01)
+                                time.sleep(0.001)
                                 data = conn.recv(1024)
                                 if not data:
                                     break
@@ -299,7 +302,7 @@ def opencv_window():
     window = 'Serial_Sender'        # mismo nombre que usa la clase
     
     cv2.namedWindow(window, cv2.WINDOW_NORMAL)
-    ######cv2.setWindowProperty(window, cv2.WND_PROP_FULLSCREEN, 1)
+    cv2.setWindowProperty(window, cv2.WND_PROP_FULLSCREEN, 1)
     #cv2.namedWindow(window, cv2.WINDOW_AUTOSIZE)
 
     # Frame totalmente verde (BGR: 0,255,0) de 480x640
