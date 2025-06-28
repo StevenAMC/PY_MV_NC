@@ -595,7 +595,7 @@ i = 1
 for puerto in puertos:
     print(f"Abriendo puerto {puerto}")
     try:
-        scan_ser = SerialScanner_RT(cola_datos,puerto,estados,f"E:{i}",baudrate=9600)
+        scan_ser = SerialScanner_RT(cola_datos,puerto,estados,f"E{i}",baudrate=9600)
         print(f"Puerto {puerto} abierto correctamente a 9600 baudios.")
         conexiones.append(scan_ser)
         i+=1
@@ -678,7 +678,7 @@ while True:
     if frame_show is not None:
         #combined = cv2.hconcat([frame_show, frame2_show])
         #cv2.imshow(_window_name, combined)
-        frame = cv2.resize(frame, None, fx=0.4, fy=0.4, interpolation=cv2.INTER_AREA)
+        frame_show = cv2.resize(frame_show, None, fx=0.4, fy=0.4, interpolation=cv2.INTER_AREA)
         cv2.imshow(_window_name, frame_show)
     
     k = cv2.waitKey(1) & 0xFF
@@ -687,6 +687,8 @@ while True:
         break
 
 stream.stop()    
+baliza.detener()
+servidor.detener()
 #stream2.stop()
 cv2.destroyAllWindows()
 
