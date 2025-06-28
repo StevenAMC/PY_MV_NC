@@ -116,7 +116,7 @@ class RTSP_movement:
         self.hilito = threading.Thread(target=self.update, daemon=True)
         self.hilito.start()
         #threading.Thread(target=self.detect_movement, daemon=True).start()
-        self.estado.set(self.nombre,1)
+        self.estado.set_estado(self.nombre,1)
     def get_running(self):
         return self.running
 
@@ -290,7 +290,7 @@ class RTSP_movement:
 
     def stop(self):
         self.running = False
-        self.estado.set(self.nombre,0)
+        self.estado.set_estado(self.nombre,0)
         self.cola.put(self.estado.get_estado_str())
         time.sleep(0.5)
         self.cap.release()
@@ -373,7 +373,7 @@ class SerialScanner_RT:
         self.serial_thread = threading.Thread(
             target=self.serial_scanner, daemon=True)
         self.serial_thread.start()
-        self.estado.set(self.nombre,1)
+        self.estado.set_estado(self.nombre,1)
 
     def serial_scanner(self):
         terminadores = [b'\r\n', b'\t']
@@ -420,7 +420,7 @@ class SerialScanner_RT:
 
     def stop(self):
         self.running = False
-        self.estado.set(self.nombre,0)
+        self.estado.set_estado(self.nombre,0)
         self.cola.put(self.estado.get_estado_str())
         
         if self.ser.is_open:
@@ -505,10 +505,10 @@ class ServidorTCP:
                                 print("Recibido:",data_lleg)
                                 if "C2" in data_lleg:
                                     if "0" in data_lleg:
-                                        self.estados.set("C2",0)
+                                        self.estados.set_estado("C2",0)
                                         self.cola.put(self.estado.get_estado_str())
                                     else:
-                                        self.estados.set("C2",1)
+                                        self.estados.set_estado("C2",1)
                                 else:
                                     self.cola.put(f"{data_lleg}")
                                 
