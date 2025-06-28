@@ -496,7 +496,7 @@ class ServidorTCP:
                         conn, addr = s.accept()
                         print("Conectado por", addr)
                         with conn:
-                            self.client_conn = conn
+                            #self.client_conn = conn #[x]
                             while self.running:
                                 data = conn.recv(1024)
                                 if not data:
@@ -518,6 +518,7 @@ class ServidorTCP:
         except Exception as e:
             print("Error en el socket:", e)
         finally:
+            self.client_conn = None
             print("Servidor detenido.")
 
     def detener(self):
