@@ -16,7 +16,7 @@ import socket
 exit_event = threading.Event()
 
 _window_name = "CAPTURA"
-__UART_JETSON__ = '/dev/ttyTHS1'
+
 __SALIDA__ = 0
 __ENTRADA__ = 1
 __UMBRA_TAM__ = 1000
@@ -28,15 +28,11 @@ IP_camera3 = "192.168.18.227"
 IP_camera4 = "192.168.18.228"   
 IP_camera_l = "192.168.18.180"
 
-rtsp_url1 = (
-    f"rtspsrc location=rtsp://admin:admin2025@{IP_camera3}:554/cam/realmonitor?channel=1&subtype=0?buffer_size=0latency=0 ! "
-    "rtph265depay ! h265parse ! nvv4l2decoder ! nvvidconv ! videorate ! "
-    "video/x-raw, format=BGRx, framerate=3/1 ! appsink"
-)
+
 rtsp_url2 = (
-    f"rtspsrc rtsp://admin:admin2025@{IP_camera4}:554/cam/realmonitor?channel=1&subtype=0?buffer_size=0 latency=0 ! "
-    "rtph265depay ! h265parse ! nvv4l2decoder ! nvvidconv ! videorate ! "
-    "video/x-raw, format=BGRx, framerate=3/1 ! appsink"
+    'rtspsrc location=rtsp://admin:admin2025@192.168.18.226:554/cam/realmonitor?channel=1&subtype=0?buffer_size=0 latency=0 ! '
+    'rtph265depay ! h265parse ! nvv4l2decoder ! nvvidconv ! videorate ! '
+    'video/x-raw, format=BGRx, framerate=4/1 ! appsink'
 )
 
 class RTSP_movement:
@@ -160,9 +156,9 @@ class RTSP_movement:
 
 
     def process_video(self, ocr):
-    #def process_video(self):
+        # def process_video(self):
         if not self.cola_imagenes_a_detectar.empty():
-            #print("PROCESANDO...")
+            # print("PROCESANDO...")
             frame = self.cola_imagenes_a_detectar.get()
             rgb_frame = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
             results = ocr.ocr(rgb_frame, cls=False)
@@ -182,11 +178,12 @@ class RTSP_movement:
                                 )
                                 detected_text += text + ""
                                 if (
-                                    acc > 0.80 and (len(text) >= 6 and len(text) <= 7)# and ("-" in text)
+                                    acc > 0.80 and (len(text) >= 6 and len(
+                                        text) <= 7)  # and ("-" in text)
                                 ):  # len(text)>6 and len(text)<8 and acc>0.96 :
-                                    #print("PLACA:", text, "Precision:", acc)
+                                    # print("PLACA:", text, "Precision:", acc)
                                     self.strings_recibidos.append(text)
-                                    
+
         if time.time() - self.tiempo_inicio < _tiempo_ventana:
             pass
         else:
@@ -196,26 +193,27 @@ class RTSP_movement:
                 mas_comun, cantidad = contador.most_common(
                     1)[0]  # (string, cantidad)
                 self.strings_recibidos.clear()
-                
+
                 if mas_comun:
-                    print(f"String más repetido en 5s: '{mas_comun}' con {cantidad} repeticiones")
+                    #print(f"String más repetido en 5s: '{mas_comun}' con {cantidad} repeticiones")
                     mas_comun = mas_comun.upper()
                     self.plaquitas.put(mas_comun)
-                    print("PLACA mas_comun",mas_comun)
+
+                    if mas_comun not in self.texto_actual and mas_comun[-3:].isdigit():
+                        self.texto_actual = mas_comun
+                        self.cola.put(f"#P:{mas_comun},D:{self.direccion}")
                     
-                    #*********************
-                    #self.texto_actual = mas_comun
-                    
-                    self.cola.put(f"#P:{mas_comun},D:{self.direccion}")
-                    
+                    # *********************
+                    # self.texto_actual = mas_comun
+
                     """if mas_comun not in self.texto_actual:
                         self.texto_actual = mas_comun
                         print(mas_comun)
                         self.cola.put(f"#P:{mas_comun},D:{self.direccion}")
                     elif mas_comun in self.texto_actual:
                         self.repeticiones_de_placas +=0"""
-                        
-                    #print(f"String más repetido en 5s: '{mas_comun}' con {cantidad} repeticiones")
+
+                    # print(f"String más repetido en 5s: '{mas_comun}' con {cantidad} repeticiones")
                     """cv2.polylines(
                         frame,
                         [np.int32(box)],
@@ -232,11 +230,11 @@ class RTSP_movement:
                         (255, 0, 0),
                         2,
                     )"""
-                    
+
                     # cv2.putText(frame,detected_text.strip(),(10,150),cv2.FONT_HERSHEY_SIMPLEX,2.5,(0,255,0),8)
-            #self.tiempo_inicio = time.time()
-            
-            #return frame
+            # self.tiempo_inicio = time.time()
+
+            # return frame
             self.tiempo_inicio = time.time()
 
     def stop(self):
@@ -267,6 +265,7 @@ class ClienteTCP_Sender:
         try:
             if not self.mensajes.empty():
                 with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
+                    s.settimeout(3)
                     s.connect((self.host, self.port))
                     print(f"Conectado a {self.host}:{self.port}")
 
@@ -313,7 +312,6 @@ class Baliza:
     def mi_tarea(self):
         # 👉 Aquí pones lo que quieras ejecutar cada 5 minutos
         self.cola.put("#C2:1")
-        #print("[Tarea] Haciendo algo importante...")
 
 print("INICIO ocr 1...........")
 ocr = PaddleOCR(use_angle_cls=True, lang="en", show_log=False)
@@ -374,7 +372,9 @@ while True:
         
         break
 
-stream.stop()    
+stream.stop()
+baliza.detener()
+cliente.detener()    
 cv2.destroyAllWindows()
 
 
