@@ -239,11 +239,12 @@ class RTSP_movement:
                 if mas_comun:
                     #print(f"String más repetido en 5s: '{mas_comun}' con {cantidad} repeticiones")
                     mas_comun = mas_comun.upper()
-                    self.plaquitas.put(mas_comun)
+                    
 
                     if mas_comun not in self.texto_actual and mas_comun[-3:].isdigit():
                         self.texto_actual = mas_comun
                         self.cola.put(f"#P:{mas_comun},D:{self.direccion}")
+                        self.plaquitas.put(mas_comun)
                     
                     # *********************
                     # self.texto_actual = mas_comun
@@ -508,7 +509,7 @@ class ServidorTCP:
                                         if "0" in data_lleg:
                                             self.estados.set_estado("C2", 0)
                                             self.cola.put(
-                                                self.estado.get_estado_str())
+                                                self.estados.get_estado_str())
                                         elif "1" in data_lleg:
                                             self.estados.set_estado("C2", 1)
                                     else:
@@ -595,7 +596,7 @@ def ocr_callbacks1():
     print("INICIO ocr")
 
     while True:
-        time.sleep(0.01)
+        time.sleep(0.001)
         stream.process_video(ocr)
         # stream2.process_video(ocr)
     print("FIN ocr")

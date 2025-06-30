@@ -197,11 +197,12 @@ class RTSP_movement:
                 if mas_comun:
                     #print(f"String más repetido en 5s: '{mas_comun}' con {cantidad} repeticiones")
                     mas_comun = mas_comun.upper()
-                    self.plaquitas.put(mas_comun)
-
+                    
                     if mas_comun not in self.texto_actual and mas_comun[-3:].isdigit():
                         self.texto_actual = mas_comun
                         self.cola.put(f"#P:{mas_comun},D:{self.direccion}")
+                        self.plaquitas.put(mas_comun)
+
                     
                     # *********************
                     # self.texto_actual = mas_comun
@@ -262,23 +263,24 @@ class ClienteTCP_Sender:
         print("Cliente detenido.")
 
     def _enviar_mensajes(self):
-        try:
-            with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
-                s.settimeout(3)
-                s.connect((self.host, self.port))
-                print(f"Conectado a {self.host}:{self.port}")
-                while self.running:
-                    try:
-                        if not self.mensajes.empty():
-                            mensaje = self.mensajes.get_nowait()
-                            s.sendall(mensaje.encode())
-                            print("Enviado:", mensaje)
-                    except Exception as e:
-                        print("Error envio:",e)
-                    finally:
-                        time.sleep(0.1)
-        except Exception as e:
-            print("Error en el cliente:", e)
+        if self.running == True:
+            try:
+                with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
+                    s.settimeout(3)
+                    s.connect((self.host, self.port))
+                    print(f"Conectado a {self.host}:{self.port}")
+                    while self.running:
+                        try:
+                            if not self.mensajes.empty():
+                                mensaje = self.mensajes.get_nowait()
+                                s.sendall(mensaje.encode())
+                                print("Enviado:", mensaje)
+                        except Exception as e:
+                            print("Error envio:",e)
+                        finally:
+                            time.sleep(0.05)
+            except Exception as e:
+                print("Error en el cliente:", e)
         
 class Baliza:
     def __init__(self, cola, intervalo=295):
@@ -329,7 +331,7 @@ def ocr_callbacks1():
     print("INICIO ocr")
     
     while True:
-        time.sleep(0.01)
+        time.sleep(0.001)
         stream.process_video(ocr)
         #stream2.process_video(ocr)
     print("FIN ocr")
