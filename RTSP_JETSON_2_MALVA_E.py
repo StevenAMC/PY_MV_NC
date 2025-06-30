@@ -75,7 +75,7 @@ class RTSP_movement:
                 """frame = cv2.resize(
                     frame, None, fx=1, fy=1, interpolation=cv2.INTER_CUBIC
                 )"""
-                if self.direccion == __ENTRADA__:
+                if self.direccion == 3:
                     alto, ancho, canales = frame.shape
                     frame = frame[300:alto, 400:ancho-200]
                     alto, ancho, canales = frame.shape
@@ -89,7 +89,7 @@ class RTSP_movement:
                     frame = frame[::, 0:ancho-500]
                     
                     
-                if self.direccion == __SALIDA__:
+                if self.direccion == 4:
                     alto, ancho, canales = frame.shape
                     frame = frame[300:alto, 700:ancho-100]
                     alto, ancho, canales = frame.shape
@@ -262,24 +262,24 @@ class ClienteTCP_Sender:
         print("Cliente detenido.")
 
     def _enviar_mensajes(self):
-        try:
-            if not self.mensajes.empty():
-                with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
-                    s.settimeout(3)
-                    s.connect((self.host, self.port))
-                    print(f"Conectado a {self.host}:{self.port}")
-
-                    while self.running:
-                            try:
-                                mensaje = self.mensajes.get_nowait()
-                                s.sendall(mensaje.encode())
-                                print("Enviado:", mensaje)
-                            except queue.Empty:
-                                pass
-        except Exception as e:
-            print("Error en el cliente:", e)
-        finally:
-            time.sleep(0.1)
+        while self.running:
+            try:
+                if not self.mensajes.empty():
+                    with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
+                        s.settimeout(3)
+                        s.connect((self.host, self.port))
+                        print(f"Conectado a {self.host}:{self.port}")
+                        try:
+                            mensaje = self.mensajes.get_nowait()
+                            s.sendall(mensaje.encode())
+                            print("Enviado:", mensaje)
+                        except queue.Empty:
+                            pass
+            except Exception as e:
+                print("Error en el cliente:", e)
+            finally:
+                time.sleep(0.01)
+                
 class Baliza:
     def __init__(self, cola, intervalo=295):
         self.intervalo = intervalo  # segundos
@@ -364,7 +364,7 @@ while True:
     if frame_show is not None:
         #combined = cv2.hconcat([frame_show, frame2_show])
         #cv2.imshow(_window_name, combined)
-        frame_show = cv2.resize(frame_show, None, fx=0.4, fy=0.4, interpolation=cv2.INTER_AREA)
+        frame_show = cv2.resize(frame_show, None, fx=0.3, fy=0.3, interpolation=cv2.INTER_AREA)
         cv2.imshow(_window_name, frame_show)
     
     k = cv2.waitKey(1) & 0xFF
