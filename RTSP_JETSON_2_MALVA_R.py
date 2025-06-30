@@ -9,7 +9,7 @@ from datetime import datetime
 from collections import Counter
 from pynput import keyboard
 import serial.tools.list_ports
-#-import sys
+# -import sys
 import socket
 
 
@@ -17,8 +17,9 @@ import socket
 exit_event = threading.Event()
 
 _window_name = "CAPTURA"
-#__UART_JETSON__ = '/dev/ttyTHS1'
-__UART_JETSON__ = "/dev/serial/by-id/"+"usb-FTDI_FT232R_USB_UART_00000000-if00-port0"
+# __UART_JETSON__ = '/dev/ttyTHS1'
+__UART_JETSON__ = "/dev/serial/by-id/" + \
+    "usb-FTDI_FT232R_USB_UART_00000000-if00-port0"
 __SALIDA__ = 0
 __ENTRADA__ = 1
 __UMBRA_TAM__ = 1000
@@ -27,13 +28,13 @@ _tiempo_ventana = 0
 IP_camera1 = "192.168.18.225"
 IP_camera2 = "192.168.18.226"
 IP_camera3 = "192.168.18.227"
-IP_camera4 = "192.168.18.228"   
+IP_camera4 = "192.168.18.228"
 IP_camera_l = "192.168.18.180"
 
 rtsp_url1 = (
-    "rtspsrc location=rtsp://admin:admin2025@192.168.18.255:554/cam/realmonitor?channel=1&subtype=0?buffer_size=0 latency=0 ! "
-    "rtph265depay ! h265parse ! nvv4l2decoder ! nvvidconv ! videorate ! "
-    "video/x-raw, format=BGRx, framerate=5/1 ! appsink"
+    'rtspsrc location=rtsp://admin:admin2025@192.168.18.255:554/cam/realmonitor?channel=1&subtype=0?buffer_size=0 latency=0 ! '
+    'rtph265depay ! h265parse ! nvv4l2decoder ! nvvidconv ! videorate ! '
+    'video/x-raw, format=BGRx, framerate=5/1 ! appsink'
 )
 
 
@@ -58,10 +59,11 @@ class EstadoDispositivos:
         with self.lock:
             # Retornar copia para no exponer el original
             return self.estado.copy()
+
     def get_estado_str(self):
         with self.lock:
             return "#" + ",".join(f"{k}:{v}" for k, v in self.estado.items())
-    
+
     def mostrar_estado(self):
         with self.lock:
             estado_str = ",".join([f"{k}:{v}" for k, v in self.estado.items()])
@@ -78,9 +80,9 @@ class RTSP_movement:
         self.ultimo_tiempo = ""
         self.plaquitas = queue.Queue()
         self.colaimages = queue.Queue(maxsize=10)
-        self.cola_imagenes_a_detectar = queue.Queue(maxsize=1)#15
+        self.cola_imagenes_a_detectar = queue.Queue(maxsize=1)  # 15
         self.aLlenar = True
-        
+
         self.texto_actual = ""
         self.direccion = direccion
         self.cap = cv2.VideoCapture(self.rtsp_url, cv2.CAP_GSTREAMER)
@@ -90,15 +92,16 @@ class RTSP_movement:
         self.strings_recibidos = []
         self.tiempo_inicio = time.time()
         self.start_time = 0
-        #self.fgbg = cv2.bgsegm.createBackgroundSubtractorMOG()
-        #self.kernel = cv2.getStructuringElement(cv2.MORPH_RECT,(30,20))
-        
+        # self.fgbg = cv2.bgsegm.createBackgroundSubtractorMOG()
+        # self.kernel = cv2.getStructuringElement(cv2.MORPH_RECT,(30,20))
+
         self.repeticiones_de_placas = 0
-        
+
         self.hilito = threading.Thread(target=self.update, daemon=True)
         self.hilito.start()
-        #threading.Thread(target=self.detect_movement, daemon=True).start()
-        self.estado.set_estado(self.nombre,1)
+        # threading.Thread(target=self.detect_movement, daemon=True).start()
+        self.estado.set_estado(self.nombre, 1)
+
     def get_running(self):
         return self.running
 
@@ -115,16 +118,17 @@ class RTSP_movement:
                     frame = frame[300:alto, 400:ancho-200]
                     alto, ancho, canales = frame.shape
                     points = [
-                        [[0,0],[0, alto/4], [ancho/1.1, alto/2.8], [ancho, alto/3],[ancho,0]],
+                        [[0, 0], [0, alto/4], [ancho/1.1, alto/2.8],
+                            [ancho, alto/3], [ancho, 0]],
                         # [[160, 30], [50, 30], [80, 130], [100, 130]],
                     ]
                     for poly in points:
-                        cv2.fillPoly(frame, np.array([poly], dtype=np.int32), (0, 0, 0))
+                        cv2.fillPoly(frame, np.array(
+                            [poly], dtype=np.int32), (0, 0, 0))
                     #       RECORTE:
                     frame = frame[::, 0:ancho-500]
-                    
-                    
-                if self.direccion == 6:#__SALIDA__:
+
+                if self.direccion == 6:  # __SALIDA__:
                     alto, ancho, canales = frame.shape
                     frame = frame[300:alto, 700:ancho-100]
                     alto, ancho, canales = frame.shape
@@ -133,67 +137,70 @@ class RTSP_movement:
                         # [[160, 30], [50, 30], [80, 130], [100, 130]],
                     ]
                     for poly in points:
-                        cv2.fillPoly(frame, np.array([poly], dtype=np.int32), (0, 0, 0))
-                    
+                        cv2.fillPoly(frame, np.array(
+                            [poly], dtype=np.int32), (0, 0, 0))
+
                 else:
                     pass
-                
+
                 """with self.lock:
                     self.frame = frame"""
                 try:
-                    #self.colaimages.put(frame,block=False)
+                    # self.colaimages.put(frame,block=False)
                     if self.colaimages.full():
                         self.colaimages.get()  # Elimina el más antiguo
-                    self.colaimages.put(frame,block=False)
-                    
+                    self.colaimages.put(frame, block=False)
+
                 except:
-                    print("¡La cola colaimages está llena!")       
-                    
+                    print("¡La cola colaimages está llena!")
+
             else:
-                
+
                 self.stop()
                 break
-        
+
     def get_frame(self):
         with self.lock:
             return self.frame.copy() if self.frame is not None else None
-        
+
     def detect_movement(self):
-        
-        if self.colaimages.empty():    
-            return None,None
-        
+
+        if self.colaimages.empty():
+            return None, None
+
         frame_org = self.colaimages.get()
         frame_show = frame_org.copy()
 
         try:
-            #if self.aLlenar == True:#self.cola_imagenes_a_detectar.full():
+            # if self.aLlenar == True:#self.cola_imagenes_a_detectar.full():
             if self.cola_imagenes_a_detectar.full():
                 self.cola_imagenes_a_detectar.get()  # Elimina el más antiguo
-            self.cola_imagenes_a_detectar.put(frame_org,block=False)
-            #self.cola_imagenes_a_detectar.put(frame_org,block=False)       
-        except: #queue.Full:
-            #self.aLlenar = False
+            self.cola_imagenes_a_detectar.put(frame_org, block=False)
+            # self.cola_imagenes_a_detectar.put(frame_org,block=False)
+        except:  # queue.Full:
+            # self.aLlenar = False
             print("¡La cola cola_imagenes_a_detectar está llena!")
-                
+
         if not self.plaquitas.empty():
             self.ultima_placa = self.plaquitas.get()
             self.ultimo_tiempo = datetime.now().strftime("%H:%M:%S")
-            cv2.putText(frame_show,"Placa Vehicular:",(10, 80),cv2.FONT_HERSHEY_SIMPLEX,1,(0, 255, 0),2,)
-        
-        cv2.putText(frame_show, self.ultimo_tiempo+" > "+self.ultima_placa,(10, 150),cv2.FONT_HERSHEY_SIMPLEX,1.5,(0, 255, 0),3,)    
-        
-        current_time = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
-        cv2.putText(frame_show, current_time, (10,30), cv2.FONT_HERSHEY_SIMPLEX, 1, (0, 255, 255), 2)
-        #cv2.putText(frame, texto_estado , (10, 30), cv2.FONT_HERSHEY_SIMPLEX, 1, color,2)
-        
-        return frame_org,frame_show
+            cv2.putText(frame_show, "Placa Vehicular:", (10, 80),
+                        cv2.FONT_HERSHEY_SIMPLEX, 1, (0, 255, 0), 2,)
 
+        cv2.putText(frame_show, self.ultimo_tiempo+" > "+self.ultima_placa,
+                    (10, 150), cv2.FONT_HERSHEY_SIMPLEX, 1.5, (0, 255, 0), 3,)
+
+        current_time = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+        cv2.putText(frame_show, current_time, (10, 30),
+                    cv2.FONT_HERSHEY_SIMPLEX, 1, (0, 255, 255), 2)
+        # cv2.putText(frame, texto_estado , (10, 30), cv2.FONT_HERSHEY_SIMPLEX, 1, color,2)
+
+        return frame_org, frame_show
 
     def process_video(self, ocr):
-    #def process_video(self):
+        # def process_video(self):
         if not self.cola_imagenes_a_detectar.empty():
-            #print("PROCESANDO...")
+            # print("PROCESANDO...")
             frame = self.cola_imagenes_a_detectar.get()
             rgb_frame = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
             results = ocr.ocr(rgb_frame, cls=False)
@@ -213,11 +220,12 @@ class RTSP_movement:
                                 )
                                 detected_text += text + ""
                                 if (
-                                    acc > 0.80 and (len(text) >= 6 and len(text) <= 7)# and ("-" in text)
+                                    acc > 0.80 and (len(text) >= 6 and len(
+                                        text) <= 7)  # and ("-" in text)
                                 ):  # len(text)>6 and len(text)<8 and acc>0.96 :
-                                    #print("PLACA:", text, "Precision:", acc)
+                                    # print("PLACA:", text, "Precision:", acc)
                                     self.strings_recibidos.append(text)
-                                    
+
         if time.time() - self.tiempo_inicio < _tiempo_ventana:
             pass
         else:
@@ -227,26 +235,27 @@ class RTSP_movement:
                 mas_comun, cantidad = contador.most_common(
                     1)[0]  # (string, cantidad)
                 self.strings_recibidos.clear()
-                
+
                 if mas_comun:
-                    print(f"String más repetido en 5s: '{mas_comun}' con {cantidad} repeticiones")
+                    print(
+                        f"String más repetido en 5s: '{mas_comun}' con {cantidad} repeticiones")
                     mas_comun = mas_comun.upper()
                     self.plaquitas.put(mas_comun)
-                    print("PLACA mas_comun",mas_comun)
-                    
-                    #*********************
-                    #self.texto_actual = mas_comun
-                    
+                    print("PLACA mas_comun", mas_comun)
+
+                    # *********************
+                    # self.texto_actual = mas_comun
+
                     self.cola.put(f"#P:{mas_comun},D:{self.direccion}")
-                    
+
                     """if mas_comun not in self.texto_actual:
                         self.texto_actual = mas_comun
                         print(mas_comun)
                         self.cola.put(f"#P:{mas_comun},D:{self.direccion}")
                     elif mas_comun in self.texto_actual:
                         self.repeticiones_de_placas +=0"""
-                        
-                    #print(f"String más repetido en 5s: '{mas_comun}' con {cantidad} repeticiones")
+
+                    # print(f"String más repetido en 5s: '{mas_comun}' con {cantidad} repeticiones")
                     """cv2.polylines(
                         frame,
                         [np.int32(box)],
@@ -263,16 +272,16 @@ class RTSP_movement:
                         (255, 0, 0),
                         2,
                     )"""
-                    
+
                     # cv2.putText(frame,detected_text.strip(),(10,150),cv2.FONT_HERSHEY_SIMPLEX,2.5,(0,255,0),8)
-            #self.tiempo_inicio = time.time()
-            
-            #return frame
+            # self.tiempo_inicio = time.time()
+
+            # return frame
             self.tiempo_inicio = time.time()
 
     def stop(self):
         self.running = False
-        self.estado.set_estado(self.nombre,0)
+        self.estado.set_estado(self.nombre, 0)
         self.cola.put(self.estado.get_estado_str())
         time.sleep(0.5)
         self.cap.release()
@@ -341,9 +350,10 @@ class scannerUSB:
                 break
             time.sleep(0.1)
 
+
 class SerialScanner_RT:
-    def __init__(self, cola, port,estado,nombre, baudrate=9600):
-        
+    def __init__(self, cola, port, estado, nombre, baudrate=9600):
+
         self.cola = cola
         self.port = port
         self.estado = estado
@@ -351,11 +361,11 @@ class SerialScanner_RT:
         self.ser = serial.Serial(self.port, baudrate, timeout=0)
         self.running = True
         self.ser.read_all()
-        
+
         self.serial_thread = threading.Thread(
             target=self.serial_scanner, daemon=True)
         self.serial_thread.start()
-        self.estado.set_estado(self.nombre,1)
+        self.estado.set_estado(self.nombre, 1)
 
     def serial_scanner(self):
         terminadores = [b'\r\n', b'\t']
@@ -364,34 +374,39 @@ class SerialScanner_RT:
             while self.running:
                 if self.ser.in_waiting > 0:
                     buffer += self.ser.read(self.ser.in_waiting)
-                    #buffer = bytes([b for b in buffer if 32 <= b <= 126])#[x]
+                    # buffer = bytes([b for b in buffer if 32 <= b <= 126])#[x]
                     # Permitir caracteres imprimibles (32-126) y CR(13), LF(10), TAB(9)
-                    buffer = bytes([b for b in buffer if 32 <= b <= 126 or b in (9, 10, 13)])
+                    buffer = bytes([b for b in buffer if 32 <=
+                                   b <= 126 or b in (9, 10, 13)])
                     for t in terminadores:
                         if t in buffer:
                             mensaje, _, buffer = buffer.partition(t)
                             try:
                                 # Filtrar caracteres inválidos antes de decodificar
-                                #mensaje = bytes([b for b in mensaje if 32 <= b <= 126])
-                                mensaje = bytes([b for b in mensaje if 32 <= b <= 126 or b in (9, 10, 13)])
-                                mensaje_str = mensaje.decode(errors='ignore').strip()
+                                # mensaje = bytes([b for b in mensaje if 32 <= b <= 126])
+                                mensaje = bytes(
+                                    [b for b in mensaje if 32 <= b <= 126 or b in (9, 10, 13)])
+                                mensaje_str = mensaje.decode(
+                                    errors='ignore').strip()
                                 if t == b"\r\n":
-                                    print(f"Mensaje recibido <CR><LN>: {mensaje_str}")
+                                    print(
+                                        f"Mensaje recibido <CR><LN>: {mensaje_str}")
                                     self.cola.put(f"#Q:{mensaje_str},D:1")
                                 else:
-                                    print(f"Mensaje recibido <TAB>: {mensaje_str}")
+                                    print(
+                                        f"Mensaje recibido <TAB>: {mensaje_str}")
                                     self.cola.put(f"#Q:{mensaje_str},D:0")
                             except Exception as e:
                                 print(e, "ERROR en decode SerialScanner")
                             finally:
-                                print("b >",buffer)
+                                print("b >", buffer)
                 else:
                     time.sleep(0.001)
-        except Exception as e:#(serial.SerialException, OSError) as e:
+        except Exception as e:  # (serial.SerialException, OSError) as e:
             self.cola.put(f"#E{self.id}:0")
-            
+
             print(f"[ERROR] Puerto {self.port} desconectado: {e}")
-            
+
             self.running = False
             exit_event.set()  # Señalamos que se debe salir
         finally:
@@ -402,13 +417,14 @@ class SerialScanner_RT:
 
     def stop(self):
         self.running = False
-        self.estado.set_estado(self.nombre,0)
+        self.estado.set_estado(self.nombre, 0)
         self.cola.put(self.estado.get_estado_str())
-        
+
         if self.ser.is_open:
             self.ser.close()
         self.serial_thread.join()
-        
+
+
 class SerialSender:
     def __init__(self, cola, port='/dev/ttyS0', baudrate=115200, intervalo_ms=200):
         self.cola = cola
@@ -448,7 +464,7 @@ class SerialSender:
 
 
 class ServidorTCP:
-    def __init__(self, cola,estados,host='localhost', port=65432):
+    def __init__(self, cola, estados, host='localhost', port=65432):
         self.host = host
         self.port = port
         self.estados = estados
@@ -457,9 +473,11 @@ class ServidorTCP:
         self.running = False
         self.thread = None
         self.cola = cola
+
     def iniciar(self):
         self.running = True
-        self.thread = threading.Thread(target=self._ejecutar_servidor, daemon=True)
+        self.thread = threading.Thread(
+            target=self._ejecutar_servidor, daemon=True)
         self.thread.start()
 
     def _ejecutar_servidor(self):
@@ -478,23 +496,23 @@ class ServidorTCP:
                         conn, addr = s.accept()
                         print("Conectado por", addr)
                         with conn:
-                            #self.client_conn = conn
+                            # self.client_conn = conn
                             while self.running:
                                 data = conn.recv(1024)
                                 if not data:
                                     break
-                                data_lleg =  data.decode()
-                                print("Recibido:",data_lleg)
+                                data_lleg = data.decode()
+                                print("Recibido:", data_lleg)
                                 if "C2" in data_lleg:
                                     if "0" in data_lleg:
-                                        self.estados.set_estado("C2",0)
-                                        self.cola.put(self.estado.get_estado_str())
+                                        self.estados.set_estado("C2", 0)
+                                        self.cola.put(
+                                            self.estado.get_estado_str())
                                     else:
-                                        self.estados.set_estado("C2",1)
+                                        self.estados.set_estado("C2", 1)
                                 else:
                                     self.cola.put(f"{data_lleg}")
-                                
-                                
+
                     except socket.timeout:
                         continue  # Permite revisar self.running
         except Exception as e:
@@ -514,10 +532,12 @@ class ServidorTCP:
             self.client_conn = None
         print("Servidor cerrado.")
 
+
 class Baliza:
-    def __init__(self, cola, intervalo=300):
+    def __init__(self, cola,estados, intervalo=300):
         self.intervalo = intervalo  # segundos
         self.cola = cola
+        self.estados = estados
         self.running = False
         self.thread = None
 
@@ -545,7 +565,7 @@ class Baliza:
 
     def mi_tarea(self):
         # 👉 Aquí pones lo que quieras ejecutar cada 5 minutos
-        self.cola.put(self.estado.get_estado_str())
+        self.cola.put(self.estados.get_estado_str())
         #print("[Tarea] Haciendo algo importante...")
 
 
@@ -556,8 +576,9 @@ ocr = PaddleOCR(use_angle_cls=True, lang="en", show_log=False)
 cola_datos = queue.Queue()
 
 
-stream = RTSP_movement(rtsp_url1, cola_datos, __ENTRADA__ ,estados, "C1")#__ENTRADA__)
-#stream2 = RTSP_movement(rtsp_url2, cola_datos, __SALIDA__) #DrOID
+stream = RTSP_movement(rtsp_url1, cola_datos, __ENTRADA__,
+                       estados, "C1")  # __ENTRADA__)
+# stream2 = RTSP_movement(rtsp_url2, cola_datos, __SALIDA__) #DrOID
 
 serial_app = SerialSender(cola=cola_datos, port=__UART_JETSON__)
 app_scanner = scannerUSB(cola_datos)
@@ -566,18 +587,19 @@ servidor.iniciar()
 
 time.sleep(0.200)
 
-baliza = Baliza(cola_datos,intervalo=300)  # 5 minutos
+baliza = Baliza(cola_datos,estados,intervalo=300)  # 5 minutos
 baliza.iniciar()
+
 
 def ocr_callbacks1():
     print("INICIO ocr")
-    
+
     while True:
         time.sleep(0.01)
         stream.process_video(ocr)
-        #stream2.process_video(ocr)
+        # stream2.process_video(ocr)
     print("FIN ocr")
-    
+
 
 threading.Thread(target=ocr_callbacks1, daemon=True).start()
 
@@ -585,41 +607,37 @@ threading.Thread(target=ocr_callbacks1, daemon=True).start()
 cv2.namedWindow(_window_name, cv2.WINDOW_NORMAL)
 cv2.setWindowProperty(_window_name, cv2.WND_PROP_FULLSCREEN, 1)
 
-frame,frame_show = stream.detect_movement()
+frame, frame_show = stream.detect_movement()
 
 frame_actual = None
 
 
 while True:
-    
-    if not stream.get_running() or exit_event.is_set(): #or not stream2.get_running() :
+
+    # or not stream2.get_running() :
+    if not stream.get_running() or exit_event.is_set():
         print("ERROR")
-        
+
         break
-    frame,frame_show = stream.detect_movement()
-    
+    frame, frame_show = stream.detect_movement()
 
     if frame_show is None:
         frame_actual = frame_actual
     else:
         frame_actual = frame_show
-        
 
-    
     if frame_show is not None:
-        #combined = cv2.hconcat([frame_show, frame2_show])
-        #cv2.imshow(_window_name, combined)
+        # combined = cv2.hconcat([frame_show, frame2_show])
+        # cv2.imshow(_window_name, combined)
         cv2.imshow(_window_name, frame_show)
-    
+
     k = cv2.waitKey(1) & 0xFF
     if k == 27:
-        
+
         break
 
-stream.stop()    
+stream.stop()
 baliza.detener()
 servidor.detener()
-#stream2.stop()
+# stream2.stop()
 cv2.destroyAllWindows()
-
-
