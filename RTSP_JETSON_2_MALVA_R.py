@@ -19,7 +19,7 @@ exit_event = threading.Event()
 _window_name = "CAPTURA"
 # __UART_JETSON__ = '/dev/ttyTHS1'
 __UART_JETSON__ = "/dev/serial/by-id/" + \
-    "usb-FTDI_FT232R_USB_UART_00000000-if00-port0"
+    "usb-FTDI_FT232R_USB_UART_A50285BI-if00-port0"#"usb-FTDI_FT232R_USB_UART_00000000-if00-port0"
 __SALIDA__ = 0
 __ENTRADA__ = 1
 __UMBRA_TAM__ = 1000
@@ -32,7 +32,7 @@ IP_camera4 = "192.168.18.228"
 IP_camera_l = "192.168.18.180"
 
 rtsp_url1 = (
-    'rtspsrc location=rtsp://admin:admin2025@192.168.18.255:554/cam/realmonitor?channel=1&subtype=0?buffer_size=0 latency=0 ! '
+    'rtspsrc location=rtsp://admin:admin2025@192.168.18.225:554/cam/realmonitor?channel=1&subtype=0?buffer_size=0 latency=0 ! '
     'rtph265depay ! h265parse ! nvv4l2decoder ! nvvidconv ! videorate ! '
     'video/x-raw, format=BGRx, framerate=5/1 ! appsink'
 )
@@ -240,9 +240,13 @@ class RTSP_movement:
                     print(
                         f"String más repetido en 5s: '{mas_comun}' con {cantidad} repeticiones")
                     mas_comun = mas_comun.upper()
+                    print(mas_comun)
                     self.plaquitas.put(mas_comun)
-                    print("PLACA mas_comun", mas_comun)
 
+                    if mas_comun not in self.texto_actual:
+                        self.texto_actual = mas_comun
+                        self.cola.put(f"#P:{mas_comun},D:{self.direccion}")
+                    
                     # *********************
                     # self.texto_actual = mas_comun
 
@@ -503,12 +507,12 @@ class ServidorTCP:
                                     break
                                 data_lleg = data.decode()
                                 print("Recibido:", data_lleg)
-                                if "C2" in data_lleg:
+                                if "#C2:" in data_lleg:
                                     if "0" in data_lleg:
                                         self.estados.set_estado("C2", 0)
                                         self.cola.put(
                                             self.estado.get_estado_str())
-                                    else:
+                                    elif "1" in data_lleg:
                                         self.estados.set_estado("C2", 1)
                                 else:
                                     self.cola.put(f"{data_lleg}")
@@ -577,8 +581,7 @@ cola_datos = queue.Queue()
 
 
 stream = RTSP_movement(rtsp_url1, cola_datos, __ENTRADA__,
-                       estados, "C1")  # __ENTRADA__)
-# stream2 = RTSP_movement(rtsp_url2, cola_datos, __SALIDA__) #DrOID
+                       estados, "C1")
 
 serial_app = SerialSender(cola=cola_datos, port=__UART_JETSON__)
 app_scanner = scannerUSB(cola_datos)
@@ -629,6 +632,7 @@ while True:
     if frame_show is not None:
         # combined = cv2.hconcat([frame_show, frame2_show])
         # cv2.imshow(_window_name, combined)
+        frame_show = cv2.resize(frame_show, None, fx=0.4, fy=0.4, interpolation=cv2.INTER_AREA)
         cv2.imshow(_window_name, frame_show)
 
     k = cv2.waitKey(1) & 0xFF
@@ -639,5 +643,5 @@ while True:
 stream.stop()
 baliza.detener()
 servidor.detener()
-# stream2.stop()
+
 cv2.destroyAllWindows()
