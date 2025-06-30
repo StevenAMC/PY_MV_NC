@@ -15,7 +15,7 @@ import socket
 
 # Variable global de control
 exit_event = threading.Event()
-
+#usb-FTDI_FT232R_USB_UART_00000000-if00-port0
 _window_name = "CAPTURA"
 #__UART_JETSON__ = '/dev/ttyTHS1'
 __UART_JETSON__ = "/dev/serial/by-id/"+"usb-FTDI_FT232R_USB_UART_A50285BI-if00-port0"
