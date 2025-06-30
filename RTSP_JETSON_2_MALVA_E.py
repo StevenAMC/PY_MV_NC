@@ -264,19 +264,19 @@ class ClienteTCP_Sender:
     def _enviar_mensajes(self):
         try:
             with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
-                    s.settimeout(3)
-                    s.connect((self.host, self.port))
-                    print(f"Conectado a {self.host}:{self.port}")
-                    while self.running:
-                        try:
-                            if not self.mensajes.empty():
-                                mensaje = self.mensajes.get_nowait()
-                                s.sendall(mensaje.encode())
-                                print("Enviado:", mensaje)
-                        except Exception as e:
-                            print("Error envio:",e)
-                        finally:
-                            time.sleep(0.1)
+                s.settimeout(3)
+                s.connect((self.host, self.port))
+                print(f"Conectado a {self.host}:{self.port}")
+                while self.running:
+                    try:
+                        if not self.mensajes.empty():
+                            mensaje = self.mensajes.get_nowait()
+                            s.sendall(mensaje.encode())
+                            print("Enviado:", mensaje)
+                    except Exception as e:
+                        print("Error envio:",e)
+                    finally:
+                        time.sleep(0.1)
         except Exception as e:
             print("Error en el cliente:", e)
         
