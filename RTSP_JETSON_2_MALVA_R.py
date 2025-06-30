@@ -240,7 +240,6 @@ class RTSP_movement:
                     print(
                         f"String más repetido en 5s: '{mas_comun}' con {cantidad} repeticiones")
                     mas_comun = mas_comun.upper()
-                    print(mas_comun)
                     self.plaquitas.put(mas_comun)
 
                     if mas_comun not in self.texto_actual:
@@ -249,8 +248,6 @@ class RTSP_movement:
                     
                     # *********************
                     # self.texto_actual = mas_comun
-
-                    self.cola.put(f"#P:{mas_comun},D:{self.direccion}")
 
                     """if mas_comun not in self.texto_actual:
                         self.texto_actual = mas_comun
