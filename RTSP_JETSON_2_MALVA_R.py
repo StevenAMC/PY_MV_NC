@@ -15,10 +15,10 @@ import socket
 
 # Variable global de control
 exit_event = threading.Event()
-#usb-FTDI_FT232R_USB_UART_00000000-if00-port0
+
 _window_name = "CAPTURA"
 #__UART_JETSON__ = '/dev/ttyTHS1'
-__UART_JETSON__ = "/dev/serial/by-id/"+"usb-FTDI_FT232R_USB_UART_A50285BI-if00-port0"
+__UART_JETSON__ = "/dev/serial/by-id/"+"usb-FTDI_FT232R_USB_UART_00000000-if00-port0"
 __SALIDA__ = 0
 __ENTRADA__ = 1
 __UMBRA_TAM__ = 1000
@@ -31,7 +31,7 @@ IP_camera4 = "192.168.18.228"
 IP_camera_l = "192.168.18.180"
 
 rtsp_url1 = (
-    f"rtspsrc location=rtsp://admin:admin2025@{IP_camera1}:554/cam/realmonitor?channel=1&subtype=0 latency=0 ! "
+    "rtspsrc location=rtsp://admin:admin2025@192.168.18.255:554/cam/realmonitor?channel=1&subtype=0?buffer_size=0 latency=0 ! "
     "rtph265depay ! h265parse ! nvv4l2decoder ! nvvidconv ! videorate ! "
     "video/x-raw, format=BGRx, framerate=5/1 ! appsink"
 )
