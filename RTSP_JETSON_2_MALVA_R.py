@@ -464,7 +464,7 @@ class SerialSender:
 
 
 class ServidorTCP:
-    def __init__(self, cola, estados, host='localhost', port=65432):
+    def __init__(self, cola, estados, host='0.0.0.0', port=65432):
         self.host = host
         self.port = port
         self.estados = estados
@@ -499,19 +499,20 @@ class ServidorTCP:
                             # self.client_conn = conn
                             while self.running:
                                 data = conn.recv(1024)
-                                if not data:
-                                    break
-                                data_lleg = data.decode()
-                                print("Recibido:", data_lleg)
-                                if "#C2:" in data_lleg:
-                                    if "0" in data_lleg:
-                                        self.estados.set_estado("C2", 0)
-                                        self.cola.put(
-                                            self.estado.get_estado_str())
-                                    elif "1" in data_lleg:
-                                        self.estados.set_estado("C2", 1)
-                                else:
-                                    self.cola.put(f"{data_lleg}")
+                                """if not data:
+                                    break"""
+                                if data:
+                                    data_lleg = data.decode().strip()
+                                    print("Recibido:", data_lleg)
+                                    if "#C2:" in data_lleg:
+                                        if "0" in data_lleg:
+                                            self.estados.set_estado("C2", 0)
+                                            self.cola.put(
+                                                self.estado.get_estado_str())
+                                        elif "1" in data_lleg:
+                                            self.estados.set_estado("C2", 1)
+                                    else:
+                                        self.cola.put(f"{data_lleg}")
 
                     except socket.timeout:
                         continue  # Permite revisar self.running
