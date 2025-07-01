@@ -394,8 +394,6 @@ time.sleep(0.200)
 baliza = Baliza(cola_datos,estados,intervalo=300)  # 5 minutos
 baliza.iniciar()
 
-cv2.namedWindow(_window_name, cv2.WINDOW_NORMAL)
-cv2.setWindowProperty(_window_name, cv2.WND_PROP_FULLSCREEN, 1)
 
 
 # 2. Bucle de ventana OpenCV (en el hilo principal)
@@ -437,7 +435,7 @@ def cleanup():
     serial_app.stop()
     
     #servidor.detener()
-    cv2.destroyAllWindows()
+    #cv2.destroyAllWindows()
 
 atexit.register(cleanup)
 

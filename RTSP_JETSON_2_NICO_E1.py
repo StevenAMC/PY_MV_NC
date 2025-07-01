@@ -1,16 +1,17 @@
 import cv2
 import threading
 import time
-import serial
+
 import queue
 import numpy as np
 from paddleocr import PaddleOCR
 from datetime import datetime
 from collections import Counter
-from pynput import keyboard
-import serial.tools.list_ports
+
+
 #import sys
 import socket
+import atexit
 
 # Variable global de control
 exit_event = threading.Event()
@@ -350,8 +351,8 @@ attemps = 0
 
 while True:
     
-    if not stream.get_running() or exit_event.is_set(): #or not stream2.get_running() :
-        print("ERROR")
+    if not stream.get_running() or exit_event.is_set() or not cliente.running:
+        print("ERROR GENERAL")
         break
     frame,frame_show = stream.detect_movement()
     
@@ -373,9 +374,13 @@ while True:
         
         break
 
-stream.stop()
-baliza.detener()
-cliente.detener()    
-cv2.destroyAllWindows()
+def cleanup():
+    stream.stop()
+    baliza.detener()
+    cliente.detener()    
+    cv2.destroyAllWindows()
+
+atexit.register(cleanup)
+
 
 
