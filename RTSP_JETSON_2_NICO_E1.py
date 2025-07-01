@@ -266,20 +266,18 @@ class ClienteTCP_Sender:
     def _enviar_mensajes(self):
         if self.running == True:
             try:
-                with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
-                    s.settimeout(3)
-                    s.connect((self.host, self.port))
-                    print(f"Conectado a {self.host}:{self.port}")
-                    while self.running:
+                if not self.mensajes.empty():
+                    mensaje = self.mensajes.get_nowait()
+                    with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
+                        s.settimeout(3)
+                        s.connect((self.host, self.port))
+                        print(f"Conectado a {self.host}:{self.port}")
                         try:
-                            if not self.mensajes.empty():
-                                mensaje = self.mensajes.get_nowait()
-                                s.sendall(mensaje.encode())
-                                print("Enviado:", mensaje)
+                            s.sendall(mensaje.encode())
+                            print("Enviado:", mensaje)
                         except Exception as e:
                             print("Error envio:",e)
-                        finally:
-                            time.sleep(0.05)
+                time.sleep(0.02)
             except Exception as e:
                 print("Error en el cliente:", e)
         
@@ -321,7 +319,7 @@ ocr = PaddleOCR(use_angle_cls=True, lang="en", show_log=False)
 
 cola_datos = queue.Queue()
 
-stream = RTSP_movement(rtsp_url2, cola_datos, __SALIDA__)#__ENTRADA__)
+stream = RTSP_movement(rtsp_url2, cola_datos, __ENTRADA__)#__ENTRADA__)
 cliente = ClienteTCP_Sender(cola_datos)
 cliente.iniciar()
 baliza = Baliza(cola_datos,intervalo=120)  # 5 minutos
