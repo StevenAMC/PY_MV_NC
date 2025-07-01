@@ -18,8 +18,10 @@ exit_event = threading.Event()
 
 _window_name = "CAPTURA"
 # __UART_JETSON__ = '/dev/ttyTHS1'
-__UART_JETSON__ = "/dev/serial/by-id/" + \
-    "usb-FTDI_FT232R_USB_UART_A50285BI-if00-port0"#"usb-FTDI_FT232R_USB_UART_00000000-if00-port0"
+#__UART_JETSON__ = "/dev/serial/by-id/" + \
+#    "usb-FTDI_FT232R_USB_UART_A50285BI-if00-port0"#"usb-FTDI_FT232R_USB_UART_00000000-if00-port0"
+__UART_JETSON__ = '/dev/ttyAMA0'
+
 __SALIDA__ = 0
 __ENTRADA__ = 1
 __UMBRA_TAM__ = 1000
@@ -371,7 +373,7 @@ servidor.iniciar()
 
 
 puertos = serial.tools.list_ports.comports()
-puertos = ["/dev/serial/by-id/"+"","/dev/serial/by-id/"+""]
+puertos = ["/dev/serial/by-id/"+"usb-FTDI_USB_Serial_Converter_FTB6SPL3-if00-port0","/dev/serial/by-id/"+"usb-Prolific_Technology_Inc._USB-Serial_Controller-if00-port0"]
 
 conexiones = []
 i = 1
