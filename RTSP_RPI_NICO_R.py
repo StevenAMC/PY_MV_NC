@@ -275,34 +275,38 @@ class ServidorTCP:
 
                 while self.running:
                     try:
-                        data_lleg = ""
+                        #data_lleg = ""
                         conn, addr = s.accept()
                         print("Conectado por", addr)
                         with conn:
                             # self.client_conn = conn
-                            while self.running:
-                                data = conn.recv(1024)
-                                """if not data:
-                                    break"""
-                                if data:
-                                    data_lleg = data.decode().strip()
-                                    print("Recibido:", data_lleg)
-                                    if "#C1:" in data_lleg:
-                                        if "0" in data_lleg:
-                                            self.estados.set_estado("C1", 0)
-                                            self.cola.put(
-                                                self.estados.get_estado_str())
-                                        elif "1" in data_lleg:
-                                            self.estados.set_estado("C1", 1)
-                                    elif "#C2:" in data_lleg:
-                                        if "0" in data_lleg:
-                                            self.estados.set_estado("C2", 0)
-                                            self.cola.put(
-                                                self.estados.get_estado_str())
-                                        elif "1" in data_lleg:
-                                            self.estados.set_estado("C2", 1)
-                                    else:
-                                        self.cola.put(f"{data_lleg}")
+                            #while self.running:
+                            data = conn.recv(1024)
+                            """if not data:
+                                break"""
+                            if data:
+                                data_lleg = data.decode().strip()
+                                print("Recibido:", data_lleg)
+                                if "#C1:" in data_lleg:
+                                    if "0" in data_lleg:
+                                        self.estados.set_estado("C1", 0)
+                                        self.cola.put(
+                                            self.estados.get_estado_str())
+                                    elif "1" in data_lleg:
+                                        self.estados.set_estado("C1", 1)
+                                        self.cola.put(
+                                            self.estados.get_estado_str())
+                                elif "#C2:" in data_lleg:
+                                    if "0" in data_lleg:
+                                        self.estados.set_estado("C2", 0)
+                                        self.cola.put(
+                                            self.estados.get_estado_str())
+                                    elif "1" in data_lleg:
+                                        self.estados.set_estado("C2", 1)
+                                        self.cola.put(
+                                            self.estados.get_estado_str())
+                                else:
+                                    self.cola.put(f"{data_lleg}")
 
                     except socket.timeout:
                         continue  # Permite revisar self.running
