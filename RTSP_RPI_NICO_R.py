@@ -11,7 +11,7 @@ from pynput import keyboard
 import serial.tools.list_ports
 # -import sys
 import socket
-
+import atexit
 
 # Variable global de control
 exit_event = threading.Event()
@@ -177,11 +177,11 @@ class SerialScanner_RT:
                                 if t == b"\r\n":
                                     print(
                                         f"Mensaje recibido <CR><LN>: {mensaje_str}")
-                                    self.cola.put(f"#Q:{mensaje_str},D:1")
+                                    self.cola.put(f"#Q:{mensaje_str},D:0")
                                 else:
                                     print(
                                         f"Mensaje recibido <TAB>: {mensaje_str}")
-                                    self.cola.put(f"#Q:{mensaje_str},D:0")
+                                    self.cola.put(f"#Q:{mensaje_str},D:1")
                             except Exception as e:
                                 print(e, "ERROR en decode SerialScanner")
                             finally:
@@ -359,7 +359,7 @@ class Baliza:
         self.cola.put(self.estados.get_estado_str())
 
 
-print("INICIO ocr 1...........")
+print("INICIANDO...........")
 
 estados = EstadoDispositivos()
 
@@ -381,7 +381,7 @@ i = 1
 for puerto in puertos:
     print(f"Abriendo puerto {puerto}")
     try:
-        scan_ser = SerialScanner_RT(cola_datos,puerto,estados,f"E{i}",baudrate=9600,id=i)
+        scan_ser = SerialScanner_RT(cola_datos,puerto,estados,f"E{i}",baudrate=9600)
         print(f"Puerto {puerto} abierto correctamente a 9600 baudios.")
         conexiones.append(scan_ser)
         i+=1
@@ -430,9 +430,20 @@ def opencv_window():
             break
     cv2.destroyAllWindows()
 
+# 3. Limpiar correctamente al terminar (CTRL-C, etc.)
+def cleanup():
+    baliza.detener()
+    servidor.detener()
+    serial_app.stop()
+    
+    #servidor.detener()
+    cv2.destroyAllWindows()
+
+atexit.register(cleanup)
 
 
-baliza.detener()
-servidor.detener()
+opencv_window()
 
-cv2.destroyAllWindows()
+
+
+
