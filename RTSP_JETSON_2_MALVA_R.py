@@ -107,6 +107,7 @@ class RTSP_movement:
         return self.running
 
     def update(self):
+        points= [np.array([(739, 376), (737, 5), (1276, 0), (1279, 587)], dtype=np.int32)]
         print("CORRIENDO")
         while self.running:
             ret, frame = self.cap.read()
@@ -114,35 +115,8 @@ class RTSP_movement:
                 """frame = cv2.resize(
                     frame, None, fx=1, fy=1, interpolation=cv2.INTER_CUBIC
                 )"""
-                if self.direccion == 5:
-                    alto, ancho, canales = frame.shape
-                    frame = frame[300:alto, 400:ancho-200]
-                    alto, ancho, canales = frame.shape
-                    points = [
-                        [[0, 0], [0, alto/4], [ancho/1.1, alto/2.8],
-                            [ancho, alto/3], [ancho, 0]],
-                        # [[160, 30], [50, 30], [80, 130], [100, 130]],
-                    ]
-                    for poly in points:
-                        cv2.fillPoly(frame, np.array(
-                            [poly], dtype=np.int32), (0, 0, 0))
-                    #       RECORTE:
-                    frame = frame[::, 0:ancho-500]
-
-                if self.direccion == 6:  # __SALIDA__:
-                    alto, ancho, canales = frame.shape
-                    frame = frame[300:alto, 700:ancho-100]
-                    alto, ancho, canales = frame.shape
-                    points = [
-                        [[ancho/6, 0], [ancho, 0], [ancho, alto/1.8]],
-                        # [[160, 30], [50, 30], [80, 130], [100, 130]],
-                    ]
-                    for poly in points:
-                        cv2.fillPoly(frame, np.array(
-                            [poly], dtype=np.int32), (0, 0, 0))
-
-                else:
-                    pass
+                if self.direccion == __ENTRADA__:
+                    cv2.fillPoly(frame, [np.array(points, dtype=np.int32)], (0, 0, 0))
 
                 """with self.lock:
                     self.frame = frame"""
