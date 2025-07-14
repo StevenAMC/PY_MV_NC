@@ -636,8 +636,8 @@ class SerialReader485:
 
                         try:
                             payload_text = payload.decode('ascii')  # Intenta decodificar
-                            self.cola.put("#P:B8D-413,D:0")
-                            self.cola.put(f"#P:{payload_text},D:2")
+                            self.cola.put("#P:000000,D:0")
+                            self.cola.put(f"#P:{payload_text},D:{__SALIDA__+2}")
                             
                             print(f"[INFO] Payload encolado: {payload_text}")
                         except UnicodeDecodeError:
@@ -682,6 +682,7 @@ servidor.iniciar()
 scheduler = Scheduler(interval_hours=12)
 scheduler.start()
 reader = SerialReader485(cola_datos,port="/dev/serial/by-id/usb-1a86_USB_Serial-if00-port0", baudrate=9600)
+reader.open()
 
 puertos = serial.tools.list_ports.comports()
 puertos = ["/dev/serial/by-id/"+"usb-FTDI_USB_Serial_Converter_FTB6SPL3-if00-port0","/dev/serial/by-id/"+"usb-Prolific_Technology_Inc._USB-Serial_Controller-if00-port0"]
