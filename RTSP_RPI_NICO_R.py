@@ -594,8 +594,12 @@ class Scheduler:
         self.stop_event.set()
         self.thread.join()
 
+import serial
+import threading
+import time
+
 class SerialReader485:
-    def __init__(self,cola, port, baudrate=9600, header=b'HEAD', suffix=b'END'):
+    def __init__(self, cola, port, baudrate=9600, header=b'\xaa\xbb', suffix=b'\xaaU'):
         self.port = port
         self.baudrate = baudrate
         self.header = header
@@ -624,14 +628,20 @@ class SerialReader485:
                     raw_data = self.serial_conn.readline().strip()
                     print(f"[DEBUG] Recibido: {raw_data}")
 
-                    # Verifica header y sufijo
+                    # Verifica cabecera y sufijo
                     if raw_data.startswith(self.header) and raw_data.endswith(self.suffix):
-                        # Extrae contenido entre header y sufijo
+                        # Extrae contenido entre cabecera y sufijo
                         payload = raw_data[len(self.header):-len(self.suffix)]
-                        self.cola.put(f"#P:000000,D:{__SALIDA__}")
-                        #self.cola.put(payload)
-                        self.cola.put(f"#P:{payload},D:2")
-                        print(f"[INFO] Payload encolado: {payload}")
+                        payload = payload.rstrip(b'\x00')  # Elimina ceros al final
+
+                        try:
+                            payload_text = payload.decode('ascii')  # Intenta decodificar
+                            self.cola.put("#P:B8D-413,D:0")
+                            self.cola.put(f"#P:{payload_text},D:2")
+                            
+                            print(f"[INFO] Payload encolado: {payload_text}")
+                        except UnicodeDecodeError:
+                            print("[WARN] No se pudo decodificar el contenido.")
                     else:
                         print("[WARN] Dato ignorado: formato incorrecto.")
             except Exception as e:
@@ -653,6 +663,7 @@ class SerialReader485:
             print(f"[INFO] Puerto {self.port} cerrado.")
 
 
+
 print("INICIANDO...........")
 
 estados = EstadoDispositivos()
@@ -670,8 +681,7 @@ servidor = ServidorTCP(cola_datos, estados)
 servidor.iniciar()
 scheduler = Scheduler(interval_hours=12)
 scheduler.start()
-reader = SerialReader485(cola_datos,port="/dev/serial/by-id/usb-1a86_USB_Serial-if00-port0", baudrate=9600, header=b'aabb', suffix=b'00000000000000000000aa55')
-reader.open()
+reader = SerialReader485(cola_datos,port="/dev/serial/by-id/usb-1a86_USB_Serial-if00-port0", baudrate=9600)
 
 puertos = serial.tools.list_ports.comports()
 puertos = ["/dev/serial/by-id/"+"usb-FTDI_USB_Serial_Converter_FTB6SPL3-if00-port0","/dev/serial/by-id/"+"usb-Prolific_Technology_Inc._USB-Serial_Controller-if00-port0"]
