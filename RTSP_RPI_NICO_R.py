@@ -768,6 +768,7 @@ def cleanup():
     servidor.detener()
     serial_app.stop()
     scheduler.stop()
+    reader.close()
     #servidor.detener()
     #cv2.destroyAllWindows()
 
