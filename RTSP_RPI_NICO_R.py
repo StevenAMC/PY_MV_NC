@@ -728,7 +728,7 @@ def opencv_window():
     window = 'Serial_Sender'        # mismo nombre que usa la clase
     
     cv2.namedWindow(window, cv2.WINDOW_NORMAL)
-    #cv2.setWindowProperty(window, cv2.WND_PROP_FULLSCREEN, 1)
+    cv2.setWindowProperty(window, cv2.WND_PROP_FULLSCREEN, 1)
     #cv2.namedWindow(window, cv2.WINDOW_AUTOSIZE)
 
     # Frame totalmente verde (BGR: 0,255,0) de 480x640
@@ -741,7 +741,7 @@ def opencv_window():
             # combined = cv2.hconcat([frame_show, frame2_show])
             # cv2.imshow(_window_name, combined)
             frame_show = cv2.resize(frame_show, None, fx=0.35, fy=0.35, interpolation=cv2.INTER_AREA)
-            cv2.imshow(_window_name, frame_show)
+            cv2.imshow(window, frame_show)
         #cv2.imshow(window, green_frame)
         
         # Si el usuario pulsa ESC en la ventana, salimos
