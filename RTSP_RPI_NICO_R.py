@@ -117,7 +117,7 @@ class RTSP_movement:
         return self.running
 
     def update(self):
-        points= [np.array([(1051, 5), (1047, 533), (1916, 901), (1917, 5)], dtype=np.int32)]
+        points= [np.array([(1914, 901), (895, 385), (873, 8), (1915, 4)], dtype=np.int32)]
         print("CORRIENDO")
         while self.running:
             ret, frame = self.cap.read()
