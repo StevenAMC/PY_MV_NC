@@ -646,6 +646,7 @@ class SerialReader485:
                         print("[WARN] Dato ignorado: formato incorrecto.")
             except Exception as e:
                 print(f"[ERROR] Error en la lectura serial: {e}")
+                self.close()
             time.sleep(0.1)
 
     def get_data(self):
@@ -655,7 +656,9 @@ class SerialReader485:
         return None
 
     def close(self):
+        
         self.running = False
+        exit_event.set()
         if self.thread:
             self.thread.join()
         if self.serial_conn and self.serial_conn.is_open:
