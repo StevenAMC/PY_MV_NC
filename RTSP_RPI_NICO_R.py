@@ -594,7 +594,7 @@ class Scheduler:
         self.stop_event.set()
         self.thread.join()
 
-class SerialReader:
+class SerialReader485:
     def __init__(self,cola, port, baudrate=9600, header=b'HEAD', suffix=b'END'):
         self.port = port
         self.baudrate = baudrate
@@ -628,8 +628,9 @@ class SerialReader:
                     if raw_data.startswith(self.header) and raw_data.endswith(self.suffix):
                         # Extrae contenido entre header y sufijo
                         payload = raw_data[len(self.header):-len(self.suffix)]
-                        self.cola.put(f"#P:000000,D:{self.direccion}")
-                        self.cola.put(payload)
+                        self.cola.put(f"#P:000000,D:{__SALIDA__}")
+                        #self.cola.put(payload)
+                        self.cola.put(f"#P:{payload},D:2")
                         print(f"[INFO] Payload encolado: {payload}")
                     else:
                         print("[WARN] Dato ignorado: formato incorrecto.")
@@ -669,7 +670,7 @@ servidor = ServidorTCP(cola_datos, estados)
 servidor.iniciar()
 scheduler = Scheduler(interval_hours=12)
 scheduler.start()
-reader = SerialReader(cola_datos,port="/dev/serial/by-id/usb-1a86_USB_Serial-if00-port0", baudrate=9600, header=b'aabb', suffix=b'aa55')
+reader = SerialReader485(cola_datos,port="/dev/serial/by-id/usb-1a86_USB_Serial-if00-port0", baudrate=9600, header=b'aabb', suffix=b'00000000000000000000aa55')
 reader.open()
 
 puertos = serial.tools.list_ports.comports()
