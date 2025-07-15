@@ -31,16 +31,19 @@ IP_camera4 = "192.168.18.228"
 IP_camera_l = "192.168.18.180"
 __MIN_PIXELES_MOVIMIENTO__ = 100
 
+
+# rtsp_url2 = (
+#     'rtspsrc location=rtsp://admin:ADM2025%21%23@192.168.18.230:554/cam/realmonitor?channel=1&subtype=0 latency=100 ! '
+#     'rtph265depay ! h265parse ! nvv4l2decoder ! nvvidconv ! videorate ! '
+#     'video/x-raw, format=BGRx, framerate=4/1 ! appsink'
+# )
+
 rtsp_url2 = (
-    'rtspsrc location=rtsp://admin:admin2025@192.168.18.227:554/cam/realmonitor?channel=1&subtype=0?buffer_size=0 latency=150 ! '
+    'rtspsrc location=rtsp://admin:Admin2025@192.168.18.229:554/cam/realmonitor?channel=1&subtype=0 latency=100 ! '
     'rtph265depay ! h265parse ! nvv4l2decoder ! nvvidconv ! videorate ! '
     'video/x-raw, format=BGRx, framerate=4/1 ! appsink'
 )
-rtsp_url2 = (
-    'rtspsrc location=rtsp://admin:ADM2025%21%23@192.168.18.230:554/cam/realmonitor?channel=1&subtype=0 latency=100 ! '
-    'rtph265depay ! h265parse ! nvv4l2decoder ! nvvidconv ! videorate ! '
-    'video/x-raw, format=BGRx, framerate=4/1 ! appsink'
-)
+
 
 class RTSP_movement:
     def __init__(self, rtsp_url, coladatos, direccion):
@@ -141,7 +144,7 @@ class RTSP_movement:
             tiempo_actual = time.time()
             if tiempo_actual - self.ultimo_mensaje >= __INTERVALO_MENSAJE__:
                 #print("¡Movimiento detectado!")
-                self.cola.put(f"#P:B8D-413,D:{self.direccion}")
+                #self.cola.put(f"#P:B8D-413,D:{self.direccion}")
                 self.ultimo_mensaje = tiempo_actual
                 
             cv2.putText(frame_show, "MOVIMIENTO DETECTADO", (10, 220),
@@ -362,7 +365,7 @@ def ocr_callbacks1():
     print("INICIO ocr")
     
     while True:
-        time.sleep(30)
+        time.sleep(1)
         stream.process_video(ocr)
     print("FIN ocr")
     

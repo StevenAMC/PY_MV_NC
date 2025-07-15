@@ -31,11 +31,18 @@ IP_camera_l = "192.168.18.180"
 
 
 
+# rtsp_url2 = (
+#     #'rtspsrc location=rtsp://admin:admin2025@192.168.18.227:554/cam/realmonitor?channel=1&subtype=0?buffer_size=0 latency=100 ! '
+#     'rtspsrc location=rtsp://admin:admin2025@192.168.18.227:554/cam/realmonitor?channel=1&subtype=0 latency=100 ! '
+#     'rtph265depay ! h265parse ! nvv4l2decoder ! nvvidconv ! videorate ! '
+#     'video/x-raw, format=BGRx, framerate=4/1 ! appsink'
+# )
+
 rtsp_url2 = (
     #'rtspsrc location=rtsp://admin:admin2025@192.168.18.227:554/cam/realmonitor?channel=1&subtype=0?buffer_size=0 latency=100 ! '
     'rtspsrc location=rtsp://admin:admin2025@192.168.18.227:554/cam/realmonitor?channel=1&subtype=0 latency=100 ! '
     'rtph265depay ! h265parse ! nvv4l2decoder ! nvvidconv ! videorate ! '
-    'video/x-raw, format=BGRx, framerate=4/1 ! appsink'
+    'video/x-raw, format=BGRx ! appsink'
 )
 
 class RTSP_movement:
@@ -88,6 +95,7 @@ class RTSP_movement:
                 except:
                     print("¡La cola colaimages está llena!")
             else:
+                exit_event.set()
                 self.stop()
                 break
         
@@ -98,7 +106,7 @@ class RTSP_movement:
     def detect_movement(self):
         
         if self.colaimages.empty():    
-            return None,None
+            return None
         
         frame_org = self.colaimages.get()
         frame_show = frame_org.copy()
@@ -124,7 +132,7 @@ class RTSP_movement:
         cv2.putText(frame_show, current_time, (10,30), cv2.FONT_HERSHEY_SIMPLEX, 1, (0, 255, 255), 2)
         #cv2.putText(frame, texto_estado , (10, 30), cv2.FONT_HERSHEY_SIMPLEX, 1, color,2)
         
-        return frame_org,frame_show
+        return frame_show
 
 
     def process_video(self, ocr):
@@ -322,7 +330,7 @@ while True:
         print("ERROR GENERAL")
         break
     
-    frame,frame_show = stream.detect_movement()
+    frame_show = stream.detect_movement()
 
     if frame_show is not None:
         #combined = cv2.hconcat([frame_show, frame2_show])
