@@ -91,7 +91,7 @@ class RTSP_movement:
         return self.running
 
     def update(self):
-        points_salida = [np.array([(604, 265), (866, 269), (835, 339), (677, 362)], dtype=np.int32)]
+        points_salida = [np.array([(420, 975), (2, 968), (0, 6), (1916, 0), (1916, 967), (1189, 972), (725, 769), (676, 694), (583, 687), (577, 771)], dtype=np.int32)]
         print("CORRIENDO")
         while self.running:
             ret, frame = self.cap.read()
@@ -180,7 +180,7 @@ class RTSP_movement:
             ruta = os.path.join("imagenes_movimiento", archivo)
             if os.path.isfile(ruta):
                 try:
-                    frame = cv2.imread(archivo)
+                    frame = cv2.imread(ruta)
                     rgb_frame = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
                     results = ocr.ocr(rgb_frame, cls=False)
 
@@ -218,7 +218,7 @@ class RTSP_movement:
                             
                             if mas_comun not in self.texto_actual and mas_comun[-3:].isdigit():
                                 self.texto_actual = mas_comun
-                                self.cola.put(f"#P:{mas_comun},D:{self.direccion}")
+                                self.cola.put(f"#P:{mas_comun},D:{self.direccion+2}")
                                 self.plaquitas.put(mas_comun)
                                 
                     print(f"[BORRANDO] {archivo}")

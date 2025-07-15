@@ -40,7 +40,7 @@ IP_camera_l = "192.168.18.180"
 
 rtsp_url2 = (
     #'rtspsrc location=rtsp://admin:admin2025@192.168.18.227:554/cam/realmonitor?channel=1&subtype=0?buffer_size=0 latency=100 ! '
-    'rtspsrc location=rtsp://admin:admin2025@192.168.18.227:554/cam/realmonitor?channel=1&subtype=0 latency=100 ! '
+    'rtspsrc location=rtsp://admin:admin2025@192.168.18.227:554/cam/realmonitor?channel=1&subtype=0 ! '
     'rtph265depay ! h265parse ! nvv4l2decoder ! nvvidconv ! videorate ! '
     'video/x-raw, format=BGRx ! appsink'
 )
